@@ -15,7 +15,7 @@ defmodule LispexTest do
         ["(", "setq", "x", "(", "+", "1", "2", ")", ")"]
 
       nested_program_b =
-        "(setq x (if t (+ 5 5) 10))"
+        ["(", "setq", "x", "(", "if", "t", "(", "+", "5", "5", ")", "10", ")", ")"]
 
       {:ok,
        %{simple_program: simple_program,

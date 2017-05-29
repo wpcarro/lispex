@@ -58,7 +58,7 @@ defmodule Lispex do
   """
   @spec read_from_tokens([String.t]) :: ast
   def read_from_tokens(tokens) do
-    do_read_from_tokens(tokens, [])
+    do_read_from_tokens(tokens, nil)
   end
 
   @doc """
@@ -119,11 +119,46 @@ defmodule Lispex do
   # Private Helpers
   ################################################################################
 
-  @spec do_read_from_tokens([String.t], ast) :: ast
-  defp do_read_from_tokens(["(" | rest], []) do
-    do_read_from_tokens(rest, [[]])
+  def simple_program do
+    ["(", "setq", "x", "12", ")"]
   end
 
+  def error_program do
+    ["(", "setq", "x", "12"]
+  end
+
+  def nested_program do
+    ["(", "setq", "x", "(", "if", "t", "(", "+", "5", "5", ")", "10", ")", ")"]
+  end
+
+  @spec do_read_from_tokens([any], :queue.queue(any)) :: [any]
+  defp do_read_from_tokens(tokens, queue)
+
+  defp do_read_from_tokens([], queue),
+    do: :queue.to_list(queue)
+
+  defp do_read_from_tokens([")" | rest], queue),
+    do: {:queue.to_list(queue), rest}
+
+  defp do_read_from_tokens(["(" | rest], queue) do
+    {sexp, remaining_tokens} =
+      do_read_from_tokens(rest, :queue.new())
+
+    queue =
+      case queue do
+        nil -> :queue.from_list(sexp)
+        queue -> :queue.in(sexp, queue)
+      end
+
+    do_read_from_tokens(remaining_tokens, queue)
+  end
+
+  defp do_read_from_tokens([x | rest], queue) do
+    parsed =
+      parse_atom(x)
+
+    do_read_from_tokens(rest, :queue.in(parsed, queue))
+  end
 
   @spec do_eval(ast, map) :: any
   defp do_eval(program, env)
