@@ -1,0 +1,2 @@
+%{"exfswatch": {:hex, :exfswatch, "0.4.2", "d88a63b5c2f8f040230d22010588ff73286fd1aef32564115afa3051eaa4391d", [:mix], [], "hexpm"},
+  "sentinel": {:git, "git@github.com:urbint/sentinel.git", "e43e08d8075d928b0aa427389e0cf8b371cc5196", []}}
