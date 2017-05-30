@@ -20,12 +20,13 @@ defmodule Lispex.Environment do
       car: fn([x | _]) -> x end,
       cdr: fn([_ | rest]) -> rest end,
 
-      >: &>/2,
-      <: &</2,
-      >=: &>=/2,
-      <=: &<=/2,
-      ==: &==/2,
-      !=: &!=/2,
+      gt: &>/2,
+      lt: &</2,
+      gte: &>=/2,
+      lte: &<=/2,
+      eq: &==/2,
+
+      message: &IO.inspect/1,
     }
   end
 end

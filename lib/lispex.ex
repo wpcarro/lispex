@@ -75,12 +75,14 @@ defmodule Lispex do
   """
   @spec parse_atom(String.t) :: integer | float | atom
   def parse_atom(input) do
-    case {parse_as_int(input), parse_as_float(input)} do
-      {{:ok, int}, _}   -> int
-      {_, {:ok, float}} -> float
-      {_, _}            -> String.to_atom(input)
+    case {parse_as_int(input), parse_as_float(input), parse_as_bool(input)} do
+      {{:ok, int}, _, _}   -> int
+      {_, {:ok, float}, _} -> float
+      {_, _, {:ok, bool}}  -> bool
+      {_, _, _}            -> String.to_atom(input)
     end
   end
+
 
   @spec parse_as_int(String.t) :: {:ok, integer} | :error
   def parse_as_int(input) do
@@ -91,6 +93,7 @@ defmodule Lispex do
     end
   end
 
+
   @spec parse_as_float(String.t) :: {:ok, float} | :error
   def parse_as_float(input) do
     try do
@@ -99,6 +102,12 @@ defmodule Lispex do
       _ -> :error
     end
   end
+
+
+  @spec parse_as_bool(String.t) :: {:ok, boolean} | :error
+  def parse_as_bool("t"), do: {:ok, true}
+  def parse_as_bool("f"), do: {:ok, false}
+  def parse_as_bool(_), do: :error
 
 
   @doc """
@@ -118,18 +127,6 @@ defmodule Lispex do
   ################################################################################
   # Private Helpers
   ################################################################################
-
-  def simple_program do
-    ["(", "setq", "x", "12", ")"]
-  end
-
-  def error_program do
-    ["(", "setq", "x", "12"]
-  end
-
-  def nested_program do
-    ["(", "setq", "x", "(", "if", "t", "(", "+", "5", "5", ")", "10", ")", ")"]
-  end
 
   @spec do_read_from_tokens([any], :queue.queue(any)) :: [any]
   defp do_read_from_tokens(tokens, queue)
@@ -160,13 +157,14 @@ defmodule Lispex do
     do_read_from_tokens(rest, :queue.in(parsed, queue))
   end
 
+
   @spec do_eval(ast, map) :: any
   defp do_eval(program, env)
   defp do_eval([:if, test, conseq, alt | rest], env) do
     if do_eval(test, env) do
       do_eval(conseq, env)
     else
-      eval(alt, env)
+      do_eval(alt, env)
     end
   end
 
@@ -181,10 +179,10 @@ defmodule Lispex do
     resolved =
       Map.get(env, identifier)
 
-    do_eval([resolved | rest], env)
+    apply(resolved, rest)
   end
 
-  defp do_eval([literal | rest], env) do
+  defp do_eval(literal, env) do
     literal
   end
 
