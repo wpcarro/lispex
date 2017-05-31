@@ -11,6 +11,8 @@ defmodule Lispex.Environment do
       *: (&*/2),
       /: (&//2),
 
+      str: &to_string/1,
+
       sqrt: &:math.sqrt/1,
       sin: &:math.sin/1,
       cos: &:math.cos/1,

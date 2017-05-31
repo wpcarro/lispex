@@ -160,7 +160,7 @@ defmodule Lispex do
 
   @spec do_eval(ast, map) :: any
   defp do_eval(program, env)
-  defp do_eval([:if, test, conseq, alt | rest], env) do
+  defp do_eval([:if, test, conseq, alt], env) do
     if do_eval(test, env) do
       do_eval(conseq, env)
     else
@@ -168,21 +168,22 @@ defmodule Lispex do
     end
   end
 
-  defp do_eval([:define, identifier, val | rest], env) do
-    new_env =
-      Map.put(env, identifier, do_eval(val, env))
-
-    do_eval(rest, new_env)
+  defp do_eval([:define, identifier, val], env) do
+    Map.put(env, identifier, do_eval(val, env))
   end
 
-  defp do_eval([identifier | rest], env) when is_atom(identifier) do
+  defp do_eval([function | args], env) do
     resolved =
-      Map.get(env, identifier)
+      Map.get(env, function)
 
-    apply(resolved, rest)
+    evaled_args =
+      args
+      |> Enum.map(&do_eval(&1, env))
+
+    apply(resolved, evaled_args)
   end
 
-  defp do_eval(literal, env) do
+  defp do_eval(literal, _env) do
     literal
   end
 
